@@ -24,9 +24,9 @@ def main(count):
   main = htmlSource.html.find('div.lister-list', first=True)
   for m in main.find('div.lister-item-content'):
     x.add_row([
-      [x.text for x in m.find('h3 > a')][0], #movie
-      [x.text for x in m.find('span.genre')][0], #genre
-      [x.text for x in m.find('strong')][0], #rating
+      m.find('h3 > a', first=True).text, #movie
+      m.find('span.genre', first=True).text, #genre
+      m.find('strong', first=True).text, #rating
     ])
 
   print(x)
