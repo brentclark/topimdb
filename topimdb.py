@@ -1,37 +1,37 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import argparse
-import requests
-from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 from prettytable import PrettyTable
 
-def main(imdb_top_n):
-    """ main function """
-    x = PrettyTable()
-    x.field_names = ['Movie', 'Genre', 'Rating', 'Link']
-    x.align['Movie'] = "l"
-    x.align['Genre'] = "l"
-    x.align['Link'] = "l"
+def main(count):
+  session = HTMLSession()
+  base_url = (
+    f"https://www.imdb.com/search/title?title_type="
+    f"feature&sort=num_votes,desc&count={count}"
+  )
 
-    base_url = (
-        f"https://www.imdb.com/search/title?title_type="
-        f"feature&sort=num_votes,desc&count={imdb_top_n}"
-    )
+  try:
+    htmlSource = session.get(base_url)
+  except Exception as e:
+    print(e)
 
-    source = BeautifulSoup(requests.get(base_url).content, "html.parser")
-    for m in source.findAll("div", class_="lister-item mode-advanced"):
-        x.add_row([
-            m.h3.a.text.strip(), # movie's name
-            m.find("span", attrs={"class": "genre"}).text.strip(), # genre
-            m.strong.text.strip(), # movie's rating
-            f"https://www.imdb.com{m.a.get('href')}" # movie's page link
-        ])
+  x = PrettyTable()
+  x.field_names = ['Movie', 'Genre', 'Rating']
+  x.align['Movie'] = "l"
+  x.align['Genre'] = "l"
 
-    x.sortby = 'Rating'
-    x.reversesort = True
-    print(x)
+  main = htmlSource.html.find('div.lister-list', first=True)
+  for m in main.find('div.lister-item-content'):
+    x.add_row([
+      [x.text for x in m.find('h3 > a')][0], #movie
+      [x.text for x in m.find('span.genre')][0], #genre
+      [x.text for x in m.find('strong')][0], #rating
+    ])
 
-if __name__ == "__main__":
+  print(x)
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--count',
                         action='store', type=int, help='How many movies would you like to see?')
