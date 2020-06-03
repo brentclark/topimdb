@@ -10,6 +10,7 @@ def main(count, sortby, sort, url):
         f"https://www.imdb.com/search/title/?groups={count}"
         f"&sort={sortby},{sort}"
     )
+    column_names = ['Movie', 'Genre', 'Rating']
 
     try:
         htmlSource = session.get(base_url)
@@ -17,9 +18,6 @@ def main(count, sortby, sort, url):
         print(e)
 
     print(htmlSource.html.find('title', first=True).text)
-    print(base_url)
-
-    column_names = ['Movie', 'Genre', 'Rating']
 
     if url:
         column_names.append('Url')
@@ -37,12 +35,12 @@ def main(count, sortby, sort, url):
             m.find('strong', first=True).text, #rating
         ]
 
-      if url:
-          link = [x for x in m.find('h3:nth-child(1) > a',first=True).absolute_links][0]
-          link = link.split('?')[0]
-          row_data.append(link)
+        if url:
+            link = [x for x in m.find('h3:nth-child(1) > a',first=True).absolute_links][0] #url
+            link = link.split('?')[0]
+            row_data.append(link)
 
-      x.add_row(row_data)
+        x.add_row(row_data)
 
     print(x)
 
