@@ -46,10 +46,10 @@ def main(count, sortby, sort, url):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--count', choices=['top_100', 'top_250', 'top_1000'], default='top_100')
-    parser.add_argument('-sb', '--sortby', choices=['moviemeter','alpha', 'user_rating', 'num_votes', 'boxoffice_gross_us', 'runtime', 'year', 'release_date', 'your_rating_date', 'my_ratings'], default='moviemeter')
-    parser.add_argument('-s', '--sort', choices=['asc', 'desc'], default='asc')
-    parser.add_argument('-u', '--url', action="store_true")
+    parser.add_argument('-c', '--count', choices=['top_100', 'top_250', 'top_1000'], default='top_100', help='Show either IMDB top 100, top 250, top 1000')
+    parser.add_argument('-sb', '--sortby', choices=['moviemeter','alpha', 'user_rating', 'num_votes', 'boxoffice_gross_us', 'runtime', 'year', 'release_date', 'your_rating_date', 'my_ratings'], default='moviemeter', help='sort by options')
+    parser.add_argument('-s', '--sort', choices=['asc', 'desc'], default='asc', help='ascending or descending sort')
+    parser.add_argument('-u', '--url', action="store_true", help='show IMDB url to movie')
     args = parser.parse_args()
 
     main(args.count, args.sortby, args.sort, args.url)
