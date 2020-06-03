@@ -4,36 +4,55 @@ import argparse
 from requests_html import HTMLSession
 from prettytable import PrettyTable
 
-def main(count):
-  session = HTMLSession()
-  base_url = (
-    f"https://www.imdb.com/search/title?title_type="
-    f"feature&sort=num_votes,desc&count={count}"
-  )
+def main(count, sortby, sort, url):
+    session = HTMLSession()
+    base_url = (
+        f"https://www.imdb.com/search/title/?groups={count}"
+        f"&sort={sortby},{sort}"
+    )
 
-  try:
-    htmlSource = session.get(base_url)
-  except Exception as e:
-    print(e)
+    try:
+        htmlSource = session.get(base_url)
+    except Exception as e:
+        print(e)
 
-  x = PrettyTable()
-  x.field_names = ['Movie', 'Genre', 'Rating']
-  x.align['Movie'] = "l"
-  x.align['Genre'] = "l"
+    print(htmlSource.html.find('title', first=True).text)
+    print(base_url)
 
-  main = htmlSource.html.find('div.lister-list', first=True)
-  for m in main.find('div.lister-item-content'):
-    x.add_row([
-      m.find('h3 > a', first=True).text, #movie
-      m.find('span.genre', first=True).text, #genre
-      m.find('strong', first=True).text, #rating
-    ])
+    column_names = ['Movie', 'Genre', 'Rating']
 
-  print(x)
+    if url:
+        column_names.append('Url')
+
+    x = PrettyTable()
+    x.field_names = column_names
+    x.align['Movie'] = "l"
+    x.align['Genre'] = "l"
+
+    main = htmlSource.html.find('div.lister-list', first=True)
+    for m in main.find('div.lister-item-content'):
+        row_data = [
+            f"{m.find('h3 > a', first=True).text} - {m.find('h3:nth-child(1) > span:nth-child(3)', first=True).text}", #movie
+            m.find('span.genre', first=True).text, #genre
+            m.find('strong', first=True).text, #rating
+        ]
+
+      if url:
+          link = [x for x in m.find('h3:nth-child(1) > a',first=True).absolute_links][0]
+          link = link.split('?')[0]
+          row_data.append(link)
+
+      x.add_row(row_data)
+
+    print(x)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--count',
-                        action='store', type=int, help='How many movies would you like to see?')
+    parser.add_argument('-c', '--count', choices=['top_100', 'top_250', 'top_1000'], default='top_100')
+    parser.add_argument('-sb', '--sortby', choices=['moviemeter','alpha', 'user_rating', 'num_votes', 'boxoffice_gross_us', 'runtime', 'year', 'release_date', 'your_rating_date', 'my_ratings'], default='moviemeter')
+    parser.add_argument('-s', '--sort', choices=['asc', 'desc'], default='asc')
+    parser.add_argument('-u', '--url', action="store_true")
     args = parser.parse_args()
-    main(args.count)
+
+    main(args.count, args.sortby, args.sort, args.url)
+
